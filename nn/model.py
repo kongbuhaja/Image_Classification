@@ -117,17 +117,24 @@ class Model():
 
 def get_model(model_name, nc, c=64):
     model_name = model_name.lower()
-    assert model_name in ['resnet18', 'dresnet18', 'resnet50', 'torch_resnet18']
+    assert model_name in ['resnet18', 'resnet182', 'dresnet18', 'dresnet182', 'psaresnet18', 'psdresnet18', 'psddresnet18', 'resnet50']
 
     if model_name == 'resnet18':
-        model = ResNet18(nc, c=c)
-
+        model = ResNet18(nc, c)
+    elif model_name == 'resnet182':
+        model = ResNet182(nc, c)
     elif model_name == 'dresnet18':
-        model = DResNet18(nc, c=c)
-
+        model = DResNet18(nc, c)
+    elif model_name == 'dresnet182':
+        model = DResNet182(nc, c)
+    elif model_name == 'psaresnet18':
+        model = PSAResNet18(nc, c)
+    elif model_name == 'psdresnet18':
+        model = PSDResNet18(nc, c)
+    elif model_name == 'psddresnet18':
+        model = PSDDResNet18(nc, c)
     elif model_name == 'resnet50':
-        model = ResNet50(nc, c=c)
-
+        model = ResNet50(nc, c)
     elif model_name == 'torch_resnet18':
         model = torchvision.models.resnet18(pretrained=False)
         model.conv1 = nn.Conv2d(3, c, 3, 1)

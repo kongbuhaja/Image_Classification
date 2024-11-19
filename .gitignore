@@ -1,6 +1,11 @@
-trained_models
-logs
-dataset
+/trained_models/
+/logs/
+/dataset/
+build/
+__pycache__/
+DCNv4.egg-info/
 
 *.log
-train.sh
+# train.sh
+*.pyc
+*.egg

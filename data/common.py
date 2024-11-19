@@ -5,11 +5,11 @@ from PIL import Image, ImageEnhance, ImageDraw
 
 def check_dataset(data_name):
     if not os.path.exists('dataset'):
-        os.mkdir('data')
+        os.mkdir('dataset')
 
     assert data_name in ['tiny-imagenet']
 
-    if data_name == 'tiny_imagenet':
+    if data_name == 'tiny-imagenet':
         if not os.path.exists('dataset/tiny-imagenet-200'):
             os.system('cd dataset \n \
                     wget http://cs231n.stanford.edu/tiny-imagenet-200.zip \n \
