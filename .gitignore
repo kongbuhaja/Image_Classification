@@ -3,4 +3,4 @@ logs
 dataset
 
 *.log
-*.sh
+train.sh
