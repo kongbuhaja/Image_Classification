@@ -1,0 +1,6 @@
+trained_models
+logs
+dataset
+
+*.log
+*.sh
