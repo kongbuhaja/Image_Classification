@@ -107,3 +107,59 @@ class PSD(nn.Module):
         b = b + self.attn(b)
         b = b + self.ffn(b)
         return self.cv2(torch.cat((a, b), 1))
+    
+class PSABlock(nn.Module):
+    def __init__(self, c, attn_ratio=0.5, num_heads=4, shortcut=True):
+        super().__init__()
+        self.attn = Attention(c, attn_ratio=attn_ratio, num_heads=num_heads)
+        self.ffn = nn.Sequential(Conv(c, c * 2, 1),
+                                 Conv(c * 2, c, 1, act=False))
+        self.add = shortcut
+
+    def forward(self, x):
+        x = x + self.attn(x) if self.add else self.attn(x)
+        x = x + self.ffn(x) if self.add else self.ffn(x)
+        return x
+    
+class PSDBlock(nn.Module):
+    def __init__(self, c, k=3, shortcut=True):
+        super().__init__()
+        self.attn = DConv(c, c, k=k)
+        self.ffn = nn.Sequential(Conv(c, c * 2, 1),
+                                 Conv(c * 2, c, 1, act=False))
+        self.add = shortcut
+
+    def forward(self, x):
+        x = x + self.attn(x) if self.add else self.attn(x)
+        x = x + self.ffn(x) if self.add else self.ffn(x)
+        return x
+    
+class C2PSA(nn.Module):
+    def __init__(self, c1, c2, n=1, e=0.5):
+        super().__init__()
+        assert c1 == c2
+        self.c = int(c1*e)
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv(2 * self.c, c1, 1)
+
+        self.m = nn.Sequential(*(PSABlock(self.c, attn_ratio=0.5, num_heads=self.c // 64) for _ in range(n)))
+
+    def forward(self, x):
+        a, b = self.cv1(x).split((self.c, self.c), dim=1)
+        b = self.m(b)
+        return self.cv2(torch.cat((a, b), 1))
+
+class C2PSD(nn.Module):
+    def __init__(self, c1, c2, n=1, e=0.5):
+        super().__init__()
+        assert c1 == c2
+        self.c = int(c1*e)
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv(2 * self.c, c1, 1)
+
+        self.m = nn.Sequential(*(PSDBlock(self.c, k=3) for _ in range(n)))
+
+    def forward(self, x):
+        a, b = self.cv1(x).split((self.c, self.c), dim=1)
+        b = self.m(b)
+        return self.cv2(torch.cat((a, b), 1))

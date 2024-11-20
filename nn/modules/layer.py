@@ -50,7 +50,6 @@ class Attention(nn.Module):
         self.scale = self.key_dim**-0.5
         nh_kd = self.key_dim * num_heads
         h = self.head_dim * num_heads + nh_kd * 2
-        print(self.head_dim * num_heads, dim)
         self.qkv = Conv(dim, h, 1, act=False)
         self.proj = Conv(dim, dim, 1, act=False)
         self.pe = Conv(dim, dim, 3, 1, g=dim, act=False)

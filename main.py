@@ -28,6 +28,7 @@ def eval_process(args):
     model.model = model.model.to(device)
 
     engine.eval_process(model, test_loader, device=device)
+    engine.gradcam_process(model, test_loader)
 
 if __name__ == '__main__':
     args = engine.args
