@@ -20,6 +20,7 @@ class Model():
             self.model = get_model(model_name, nc)
             print(f'Success to initialize {self.model_name} model')
     
+        self.params = self.count_parameters(verbose=0)
         self.epochs, self.recalls, self.losses, self.lrs = [], [], [], []
         self.best_recall, self.best_epoch = -1, -1
 
