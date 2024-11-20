@@ -20,9 +20,12 @@ class Model():
             self.model = get_model(model_name, nc)
             print(f'Success to initialize {self.model_name} model')
     
+        self.nc = nc
         self.params = self.count_parameters(verbose=0)
-        self.epochs, self.recalls, self.losses, self.lrs = [], [], [], []
-        self.best_recall, self.best_epoch = -1, -1
+        self.epochs, self.lrs, self.train_losses = [], [], []
+        self.recalls, self.precisions, self.f1_scores, self.val_losses = [], [], [], []
+        self.best_epoch, self.best_train_loss = -1, -1
+        self.best_recall, self.best_precision, self.best_f1_score, self.best_val_loss= -1, -1, -1, -1
 
     def get_savepath(self):
         path = 'trained_models'
@@ -42,53 +45,63 @@ class Model():
         self.model = torch.load(f'{self.path}/model.pt')
         with open(f'{self.path}/model.info', 'r') as f:
             text = f.read()
-        self.best_recall = float(text.split('recall:')[1].split('\n')[0])
-        self.best_epoch = int(text.split('epoch:')[1].split('\n')[0])
-        self.params = int(text.split('params:')[1].split('\n')[0])
-        if 'test_recall' in text:
-            self.test_recall = float(text.split('test_recall:')[1].split('\n')[0])
-            self.test_loss = float(text.split('test_loss:')[1].split('\n')[0])
+
         print(f'Success to load model from {self.path}')
-        print(text)
 
-    def add_log(self, epoch, recall, loss, lr):
-        self.epochs += [epoch]
-        self.recalls += [recall]
-        self.losses += [loss]
+    def add_log(self, e, tl, lr, r, p, f, vl):
+        self.epochs += [e]
+        self.train_losses += [tl]
         self.lrs += [lr]
+        self.recalls += [r]
+        self.precisions += [p]
+        self.f1_scores += [f]
+        self.val_losses += [vl]
 
-    def save(self, test_recall=None, test_loss=None):
-        if test_recall is not None and test_loss is not None:
-            self.save_info(test_recall, test_loss)
+    def save(self, rpfl=None):
+        if rpfl is not None:
+            self.save_info(rpfl)
         
         else:
             if self.best_recall < self.recalls[-1]:
                 self.best_recall = self.recalls[-1]
+                self.best_precision = self.precisions[-1]
+                self.best_f1_score = self.f1_scores[-1]
                 self.best_epoch = self.epochs[-1]
+                self.best_train_loss = self.train_losses[-1]
+                self.best_val_loss = self.val_losses[-1]
 
                 torch.save(self.model, f'{self.path}/model.pt')
                 self.save_info()
                 print(f'Success to save model in {self.path}')
             self.save_csv()
 
-    def save_info(self, test_recall=None, test_loss=None):
+    def save_info(self, rpfl=None, term=16):
         info_path = f'{self.path}/model.info'
         with open(info_path, 'w') as f:
-            text = f'model_name:{self.model_name}\n' +\
-                   f'params:{self.params}\n' +\
-                   f'epoch:{self.best_epoch+1}\n' +\
-                   f'recall:{self.best_recall}\n'
-            if test_recall is not None and test_loss is not None:
-                text += f'test_recall:{test_recall}\n' +\
-                        f'test_loss:{test_loss}\n'
+            text = f"{'model_name':<{term}}:{self.model_name:>{term}}\n" +\
+                   f"{'params':<{term}}:{self.params:>{term}}\n\n" +\
+                   f"{'Train'}\n" +\
+                   f"{'epoch':<{term}}:{self.best_epoch+1:>{term}}\n" +\
+                   f"{'recall':<{term}}:{self.best_recall:>{term}.8f}\n" +\
+                   f"{'precision':<{term}}:{self.best_precision:>{term}.8f}\n" +\
+                   f"{'f1_score':<{term}}:{self.best_f1_score:>{term}.8f}\n" +\
+                   f"{'train_loss':<{term}}:{self.best_train_loss:>{term}.8f}\n" +\
+                   f"{'val_loss':<{term}}:{self.best_val_loss:>{term}.8f}\n\n"
+            if rpfl is not None:
+                text += f"{'Evaluation'}\n" +\
+                        f"{'val_recall':<{term}}:{rpfl[0]:>{term}.8f}\n" +\
+                        f"{'val_precision':<{term}}:{rpfl[1]:>{term}.8f}\n" +\
+                        f"{'val_f1_score':<{term}}:{rpfl[2]:>{term}.8f}\n" +\
+                        f"{'val_loss':<{term}}:{rpfl[3]:>{term}.8f}"
+                print(text)
             f.write(text)
 
     def save_csv(self, term=12):
         csv_path = f'{self.path}/result.csv'
-        with open(csv_path, 'w') as f:
-            f.write(f"{'epoch':<{term}}{'recall':<{term}}{'val_loss':<{term}}{'lr':<{term}}\n")
-            for e, r, l, lr in zip(self.epochs, self.recalls, self.losses, self.lrs):
-                f.write(f'{e+1:<{term}}{r:<{term}.5f}{l:<{term}.5f}{lr:<{term}.5f}\n')
+        with open(csv_path, 'w') as fs:
+            fs.write(f"{'epoch':<{term}}{'recall':<{term}}{'precision':<{term}}{'f1_score':<{term}}{'train_loss':<{term}}{'val_loss':<{term}}{'lr':<{term}}\n")
+            for e, r, p, f, tl, vl, lr in zip(self.epochs, self.recalls, self.precisions, self.f1_scores, self.train_losses, self.val_losses, self.lrs):
+                fs.write(f'{e+1:<{term}}{r:<{term}.6f}{p:<{term}.6f}{f:<{term}.6f}{tl:<{term}.6f}{vl:<{term}.6f}{lr:<{term}.6f}\n')
 
     def count_parameters(self, verbose=1):
         total_params = 0
@@ -184,8 +197,7 @@ def get_model(model_name, nc, c=32):
                           'c2psaresnet18',
                           'c2psdresnet18',
                           'c2psddresnet18', 
-                          'resnet50', 
-                          'torch_resnet18']
+                          'resnet50']
 
     if model_name == 'resnet18':
         model = ResNet18(nc, c)
@@ -209,10 +221,5 @@ def get_model(model_name, nc, c=32):
         model = C2PSDDResNet18(nc, c)
     elif model_name == 'resnet50':
         model = ResNet50(nc, c)
-    elif model_name == 'torch_resnet18':
-        model = torchvision.models.resnet18(pretrained=False)
-        model.conv1 = nn.Conv2d(3, c, 3, 1)
-        model.maxpool = nn.Identity()
-        model.fc = nn.Linear(c*2**3, nc)
-    
+
     return model

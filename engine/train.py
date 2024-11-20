@@ -25,11 +25,12 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
             optimizer.step()
 
             train_loss += loss.item()
-            train_tqdm.set_postfix_str(f'| lr: {lr:.5f}, total_loss: {train_loss/(iter+1):.5f}')
+            tl = train_loss/(iter+1)
+            train_tqdm.set_postfix_str(f'| lr: {lr:.5f}, total_loss: {tl:.5f}')
     
         if (e)%args.eval_term == 0:
-            recall, val_loss = eval_process(model, eval_loader, loss_fn, device=device)
-            model.add_log(e, recall, val_loss, lr)
+            rpfl = eval_process(model, eval_loader, loss_fn, device=device)
+            model.add_log(e, tl, lr, *rpfl)
             model.save()
 
         scheduler.step()

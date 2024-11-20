@@ -14,8 +14,9 @@ def train_process(args):
 
     engine.train_process(model, train_loader, eval_loader, args, device=device)
     model.load()
-    recall, loss = engine.eval_process(model, test_loader, device=device)
-    model.save(recall, loss)
+    rpfl = engine.eval_process(model, test_loader, device=device)
+    engine.gradcam_process(model, test_loader)
+    model.save(rpfl)
 
 def eval_process(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

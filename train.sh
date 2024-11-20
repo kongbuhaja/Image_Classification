@@ -24,14 +24,15 @@ task() {
 
 log_dir="./logs"
 log_directory_check "$log_dir"
-# task resnet18 "$log_dir"
-# task dresnet18 "$log_dir"
-# task resnet182 "$log_dir"
-# task dresnet182 "$log_dir"
-# task psaresnet18 "$log_dir"
-# task psdresnet18 "$log_dir"
-# task psddresnet18 "$log_dir"
+task resnet18 "$log_dir"
+task dresnet18 "$log_dir"
+task resnet182 "$log_dir"
+task dresnet182 "$log_dir"
+
+task psaresnet18 "$log_dir"
+task psdresnet18 "$log_dir"
+task psddresnet18 "$log_dir"
+
 task c2psaresnet18 "$log_dir"
 task c2psdresnet18 "$log_dir"
 task c2psddresnet18 "$log_dir"
-# task torch_resnet18 "$log_dir"
