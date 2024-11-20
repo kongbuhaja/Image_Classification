@@ -3,6 +3,10 @@ import torch.nn as nn
 import torchvision
 import os
 from .models import *
+from data.common import UnNormalize
+from PIL import Image
+import matplotlib.pyplot as plt
+import numpy as np
 
 class Model():
     def __init__(self, model_name='', nc=200, path=None):
@@ -15,9 +19,7 @@ class Model():
             self.get_savepath()
             self.model = get_model(model_name, nc)
             print(f'Success to initialize {self.model_name} model')
-
-        self.model_name = model_name
-        self.params = self.count_parameters(verbose=0)
+    
         self.epochs, self.recalls, self.losses, self.lrs = [], [], [], []
         self.best_recall, self.best_epoch = -1, -1
 
@@ -114,10 +116,72 @@ class Model():
                 print(f"{name}: {count:,}")
         
         return total_params
+    
+class GradCAM():
+    def __init__(self, model):
+        self.model = model.model
+        self.get_savepath(model.path)
+        if hasattr(self.model, 'psa'):
+            self.target_layer = self.model.psa
+        elif hasattr(self.model, 'psd'):
+            self.target_layer = self.model.psd
+        else:
+            self.target_layer = self.model.layer4[-1]
+        
+        self.gradients = None
+        self.activations = None
 
-def get_model(model_name, nc, c=64):
+        self.target_layer.register_forward_hook(self.save_activation)
+        self.target_layer.register_full_backward_hook(self.save_gradient)
+
+    def save_activation(self, module, input, output):
+        self.activations = output.detach()
+
+    def save_gradient(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0].detach()
+
+    def visualize(self, img, heatmap, alpha=0.5):
+        img = UnNormalize()(img)
+
+        heatmap = Image.fromarray(heatmap).resize(img.shape[:2][::-1], Image.BICUBIC)
+        heatmap = np.array(heatmap)
+
+        colored_heatmap = plt.get_cmap('jet')(heatmap)[:, :, :3]
+
+        imposed_img = (1-alpha) * img + alpha * (colored_heatmap)
+
+        return (imposed_img * 255).astype(np.uint8)
+    
+    def get_savepath(self, path):
+        self.path = f'{path}/images'
+
+        if not os.path.exists(self.path):
+            os.mkdir(self.path)
+
+        self.count = sum(
+            f.startswith(f'heatmap_pred') 
+            for _, _, files in os.walk(self.path) for f in files
+        )
+
+    def save_heatmap(self, heatmaps):
+        for label, heatmap in zip(['label', 'pred'], heatmaps):
+            image = Image.fromarray(heatmap)
+            image.save(f'{self.path}/heatmap_{label}_{self.count+1}.png')
+        self.count += 1
+    
+
+
+def get_model(model_name, nc, c=32):
     model_name = model_name.lower()
-    assert model_name in ['resnet18', 'resnet182', 'dresnet18', 'dresnet182', 'psaresnet18', 'psdresnet18', 'psddresnet18', 'resnet50', 'torch_resnet18']
+    assert model_name in ['resnet18', 
+                          'resnet182', 
+                          'dresnet18', 
+                          'dresnet182', 
+                          'psaresnet18', 
+                          'psdresnet18', 
+                          'psddresnet18', 
+                          'resnet50', 
+                          'torch_resnet18']
 
     if model_name == 'resnet18':
         model = ResNet18(nc, c)

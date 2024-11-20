@@ -34,6 +34,6 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
 
         scheduler.step()
 
-        if e - model.best_epoch >= args.patience:
+        if e - model.best_epoch > args.patience:
             break
             
