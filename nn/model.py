@@ -179,7 +179,10 @@ def get_model(model_name, nc, c=32):
                           'dresnet182', 
                           'psaresnet18', 
                           'psdresnet18', 
-                          'psddresnet18', 
+                          'psddresnet18',
+                          'c2psaresnet18',
+                          'c2psdresnet18',
+                          'c2psddresnet18', 
                           'resnet50', 
                           'torch_resnet18']
 
@@ -197,6 +200,12 @@ def get_model(model_name, nc, c=32):
         model = PSDResNet18(nc, c)
     elif model_name == 'psddresnet18':
         model = PSDDResNet18(nc, c)
+    elif model_name == 'c2psaresnet18':
+        model = C2PSAResNet18(nc, c)
+    elif model_name == 'c2psdresnet18':
+        model = C2PSDResNet18(nc, c)
+    elif model_name == 'c2psddresnet18':
+        model = C2PSDDResNet18(nc, c)
     elif model_name == 'resnet50':
         model = ResNet50(nc, c)
     elif model_name == 'torch_resnet18':
