@@ -33,7 +33,7 @@ class ResBlock2(nn.Module):
 class DResBlock(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=1):
         super().__init__()
-        self.conv1 = DConv(c1, c2, k, s, p, e=2)
+        self.conv1 = DConv(c1, c2, k, s, p, e=1.2)
         self.conv2 = Conv(c2, c2, k=1, act=False)
         self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
         # self.act = nn.SiLU()

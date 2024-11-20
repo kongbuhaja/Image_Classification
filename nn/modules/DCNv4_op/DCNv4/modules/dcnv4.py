@@ -28,8 +28,7 @@ class CenterFeatureScaleModule(nn.Module):
 class DCNv4(nn.Module):
     def __init__(
             self,
-            c1=64,
-            c2=64,
+            channels,
             kernel_size=3,
             stride=1,
             pad=1,
@@ -55,16 +54,14 @@ class DCNv4(nn.Module):
         :param norm_layer
         """
         super().__init__()
-        self.c1 = c1
-        self.c2 = c2
-        self.c = c1
+        self.channels = channels
         self.group = group
-        self.group_channels = self.c // self.group
+        self.group_channels = self.channels // self.group
 
-        if self.c % self.group != 0:
+        if self.channels % self.group != 0:
             raise ValueError(
-                f'channels must be divisible by group, but got {self.c} and {self.group}')
-        _d_per_group = self.c // self.group
+                f'channels must be divisible by group, but got {self.channels} and {self.group}')
+        _d_per_group = self.channels // self.group
 
         # you'd better set _d_per_group to a power of 2 which is more efficient in our CUDA implementation
         assert _d_per_group % 16 == 0
@@ -82,11 +79,11 @@ class DCNv4(nn.Module):
 
         self.K =  self.group * (kernel_size * kernel_size - self.remove_center)
         if dw_kernel_size is not None:
-            self.offset_mask_dw = nn.Conv2d(c1, self.c, dw_kernel_size, stride=1, padding=(dw_kernel_size - 1) // 2, groups=self.group)
-        self.offset_mask = nn.Linear(self.c, int(math.ceil((self.K * 3)/8)*8))
+            self.offset_mask_dw = nn.Conv2d(channels, channels, dw_kernel_size, stride=1, padding=(dw_kernel_size - 1) // 2, groups=1)
+        self.offset_mask = nn.Linear(channels, int(math.ceil((self.K * 3)/8)*8))
         if not without_pointwise:
-            self.value_proj = nn.Linear(c1, self.c)
-            self.output_proj = nn.Linear(self.c, c2, bias=output_bias)
+            self.value_proj = nn.Linear(channels, channels)
+            self.output_proj = nn.Linear(channels, channels, bias=output_bias)
         self._reset_parameters()
 
         if center_feature_scale:
@@ -112,17 +109,17 @@ class DCNv4(nn.Module):
         :return output                     (N, H, W, C)
         """
         b, c, h, w = input.shape
-        input = input.permute(0, 2, 3, 1).contiguous()
+        input = input
 
-        x = input
+        x = input.permute(0, 2, 3, 1)
         if not self.without_pointwise:
             x = self.value_proj(x)
         # x = x.reshape(b, h, w, -1)
         if self.dw_kernel_size is not None:
             offset_mask_input = self.offset_mask_dw(input)
-            offset_mask_input = offset_mask_input.permute(0, 2, 3, 1).view(b, h*w, -1)
+            offset_mask_input = offset_mask_input.permute(0, 2, 3, 1)#.view(b, h*w, -1)
         else:
-            offset_mask_input = input
+            offset_mask_input = input.permute(0, 2, 3, 1)
         offset_mask = self.offset_mask(offset_mask_input)#.reshape(b, h, w, -1)
 
         x_proj = x

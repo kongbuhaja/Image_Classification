@@ -29,11 +29,11 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
     
         if (e)%args.eval_term == 0:
             recall, val_loss = eval_process(model, eval_loader, loss_fn, device=device)
-            model.add_log(e+1, recall, val_loss, lr)
+            model.add_log(e, recall, val_loss, lr)
             model.save()
 
         scheduler.step()
 
-        if e - model.best_epoch > args.patience:
+        if e - model.best_epoch >= args.patience:
             break
             

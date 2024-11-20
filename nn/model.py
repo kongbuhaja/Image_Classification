@@ -73,7 +73,7 @@ class Model():
         with open(info_path, 'w') as f:
             text = f'model_name:{self.model_name}\n' +\
                    f'params:{self.params}\n' +\
-                   f'epoch:{self.best_epoch}\n' +\
+                   f'epoch:{self.best_epoch+1}\n' +\
                    f'recall:{self.best_recall}\n'
             if test_recall is not None and test_loss is not None:
                 text += f'test_recall:{test_recall}\n' +\
@@ -85,7 +85,7 @@ class Model():
         with open(csv_path, 'w') as f:
             f.write(f"{'epoch':<{term}}{'recall':<{term}}{'val_loss':<{term}}{'lr':<{term}}\n")
             for e, r, l, lr in zip(self.epochs, self.recalls, self.losses, self.lrs):
-                f.write(f'{e:<{term}}{r:<{term}.5f}{l:<{term}.5f}{lr:<{term}.5f}\n')
+                f.write(f'{e+1:<{term}}{r:<{term}.5f}{l:<{term}.5f}{lr:<{term}.5f}\n')
 
     def count_parameters(self, verbose=1):
         total_params = 0
@@ -117,7 +117,7 @@ class Model():
 
 def get_model(model_name, nc, c=64):
     model_name = model_name.lower()
-    assert model_name in ['resnet18', 'resnet182', 'dresnet18', 'dresnet182', 'psaresnet18', 'psdresnet18', 'psddresnet18', 'resnet50']
+    assert model_name in ['resnet18', 'resnet182', 'dresnet18', 'dresnet182', 'psaresnet18', 'psdresnet18', 'psddresnet18', 'resnet50', 'torch_resnet18']
 
     if model_name == 'resnet18':
         model = ResNet18(nc, c)
