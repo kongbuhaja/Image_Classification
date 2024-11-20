@@ -35,13 +35,25 @@ class Soft_Label():
 # x
 # statistic
 class Normalize():
-    def __init__(self, mean=0.5, std=0.5):
+    def __init__(self, 
+                 mean=[0.485, 0.456, 0.406], 
+                 std=[0.229, 0.224, 0.225]):
         self.mean = np.array(mean).astype(np.float32)
         self.std = np.array(std).astype(np.float32)
 
     def __call__(self, img):
         return (np.array(img).astype(np.float32)/255. - self.mean) / self.std
 
+class UnNormalize():
+    def __init__(self, 
+                 mean=[0.485, 0.456, 0.406], 
+                 std=[0.229, 0.224, 0.225]):
+        self.mean = np.array(mean).astype(np.float32)
+        self.std = np.array(std).astype(np.float32)
+
+    def __call__(self, img):
+        return img * self.std + self.mean
+    
 # geometric
 class Random_Rotate():
     def __init__(self, p=0.75):
