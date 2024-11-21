@@ -14,8 +14,8 @@ def train_process(args):
 
     engine.train_process(model, train_loader, eval_loader, args, device=device)
     model.load()
-    rpfl = engine.eval_process(model, test_loader, device=device)
-    model.save(rpfl)
+    trpfl = engine.eval_process(model, test_loader, device=device)
+    model.save(trpfl)
     engine.gradcam_process(model, test_loader)
 
 def eval_process(args):
@@ -28,7 +28,8 @@ def eval_process(args):
     model = nn.Model(path=args.path)
     model.model = model.model.to(device)
 
-    engine.eval_process(model, test_loader, device=device)
+    trpfl = engine.eval_process(model, test_loader, device=device)
+    model.save(trpfl)
     engine.gradcam_process(model, test_loader)
 
 if __name__ == '__main__':
