@@ -9,26 +9,14 @@ class ResBlock(nn.Module):
         self.conv1 = Conv(c1, c2, k, s, p)
         self.conv2 = Conv(c2, c2, k=1, act=False)
         self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
-        # self.act = nn.SiLU()
     
     def forward(self, x):
         branch = self.downsample(x) if self.downsample else x
         x = self.conv2(self.conv1(x))
         return x + branch
-        # return self.act(x + branch)
-
-class ResBlock2(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=1):
-        super().__init__()
-        self.conv1 = Conv(c1, c2, k, s, p)
-        self.conv2 = Conv(c2, c2, k=1, act=False)
-        self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
-        self.act = nn.SiLU()
-    
-    def forward(self, x):
-        branch = self.downsample(x) if self.downsample else x
-        x = self.conv2(self.conv1(x))
-        return self.act(x + branch)
+        
+    def gradcam(self, x):
+        return self.forward(x)
     
 class DResBlock(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=1):
@@ -36,27 +24,14 @@ class DResBlock(nn.Module):
         self.conv1 = DConv(c1, c2, k, s, p, e=1.2)
         self.conv2 = Conv(c2, c2, k=1, act=False)
         self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
-        # self.act = nn.SiLU()
 
     def forward(self, x):
         branch = self.downsample(x) if self.downsample else x
         x = self.conv2(self.conv1(x))
         return x + branch
-        # return self.act(x + branch)
 
-class DResBlock2(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=1):
-        super().__init__()
-        self.conv1 = DConv(c1, c2, k, s, p, e=1.2)
-        self.conv2 = Conv(c2, c2, k=1, act=False)
-        self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
-        self.act = nn.SiLU()
-
-    def forward(self, x):
-        branch = self.downsample(x) if self.downsample else x
-        x = self.conv2(self.conv1(x))
-        # return x + branch
-        return self.act(x + branch)
+    def gradcam(self, x):
+        return self.forward(x)
     
 class Bottleneck(nn.Module):
     def __init__(self, c1, c2, c3, k=3, s=1, p=1):
@@ -71,6 +46,9 @@ class Bottleneck(nn.Module):
         branch = self.downsample(x) if self.downsample else x
         x = self.conv3(self.conv2(self.conv1(x)))
         return self.act(x + branch)
+    
+    def gradcam(self, x):
+        return self.forward(x)
     
 class PSA(nn.Module):
     def __init__(self, c1, c2, e=0.5):
@@ -90,6 +68,9 @@ class PSA(nn.Module):
         b = b + self.ffn(b)
         return self.cv2(torch.cat((a, b), 1))
     
+    def gradcam(self, x):
+        return self.forward(x)
+    
 class PSD(nn.Module):
     def __init__(self, c1, c2, e=0.5):
         super().__init__()
@@ -108,6 +89,9 @@ class PSD(nn.Module):
         b = b + self.ffn(b)
         return self.cv2(torch.cat((a, b), 1))
     
+    def gradcam(self, x):
+        return self.forward(x)
+    
 class PSABlock(nn.Module):
     def __init__(self, c, attn_ratio=0.5, num_heads=4, shortcut=True):
         super().__init__()
@@ -121,6 +105,9 @@ class PSABlock(nn.Module):
         x = x + self.ffn(x) if self.add else self.ffn(x)
         return x
     
+    def gradcam(self, x):
+        return self.forward(x)
+    
 class PSDBlock(nn.Module):
     def __init__(self, c, k=3, shortcut=True):
         super().__init__()
@@ -133,6 +120,9 @@ class PSDBlock(nn.Module):
         x = x + self.attn(x) if self.add else self.attn(x)
         x = x + self.ffn(x) if self.add else self.ffn(x)
         return x
+    
+    def gradcam(self, x):
+        return self.forward(x)
     
 class C2PSA(nn.Module):
     def __init__(self, c1, c2, n=1, e=0.5):
@@ -148,6 +138,11 @@ class C2PSA(nn.Module):
         a, b = self.cv1(x).split((self.c, self.c), dim=1)
         b = self.m(b)
         return self.cv2(torch.cat((a, b), 1))
+    
+    def gradcam(self, x):
+        a, b = self.cv1(x.clone()).split((self.c, self.c), dim=1)
+        b = self.m(b)
+        return self.cv2(torch.cat((a, b), 1))
 
 class C2PSD(nn.Module):
     def __init__(self, c1, c2, n=1, e=0.5):
@@ -161,5 +156,10 @@ class C2PSD(nn.Module):
 
     def forward(self, x):
         a, b = self.cv1(x).split((self.c, self.c), dim=1)
+        b = self.m(b)
+        return self.cv2(torch.cat((a, b), 1))
+
+    def gradcam(self, x):
+        a, b = self.cv1(x.clone()).split((self.c, self.c), dim=1)
         b = self.m(b)
         return self.cv2(torch.cat((a, b), 1))
