@@ -39,7 +39,7 @@ class C2PSDResNet18(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.c2psa.gradcam(x)
+        x = self.c2psd.gradcam(x)
         x = self.avgpool(x)
         x = self.fc(torch.flatten(x, start_dim=1))
         return x
