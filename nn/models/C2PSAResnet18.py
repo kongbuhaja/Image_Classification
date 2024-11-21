@@ -16,7 +16,7 @@ class C2PSAResNet18(nn.Module):
                                     ResBlock(c*2**2, c*2**2, 3, 1))
         self.layer4 = nn.Sequential(ResBlock(c*2**2, c*2**3, 3, 2),
                                     ResBlock(c*2**3, c*2**3, 3, 1))
-        self.psa = C2PSA(c*2**3, c*2**3)
+        self.c2psa = C2PSA(c*2**3, c*2**3)
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(c*2**3, nc)
 
@@ -27,7 +27,7 @@ class C2PSAResNet18(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.psa(x)
+        x = self.c2psa(x)
         x = self.avgpool(x)
         x = self.fc(torch.flatten(x, start_dim=1))
         return x

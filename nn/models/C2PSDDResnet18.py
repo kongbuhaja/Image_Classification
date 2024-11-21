@@ -16,7 +16,7 @@ class C2PSDDResNet18(nn.Module):
                                     ResBlock(c*2**2, c*2**2, 3, 1))
         self.layer4 = nn.Sequential(ResBlock(c*2**2, c*2**3, 3, 2),
                                     DResBlock(c*2**3, c*2**3, 3, 1))
-        self.psd = C2PSD(c*2**3, c*2**3)
+        self.c2psd = C2PSD(c*2**3, c*2**3)
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(c*2**3, nc)
 
@@ -27,7 +27,7 @@ class C2PSDDResNet18(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.layer4(x)
-        x = self.psd(x)
+        x = self.c2psd(x)
         x = self.avgpool(x)
         x = self.fc(torch.flatten(x, start_dim=1))
         return x
