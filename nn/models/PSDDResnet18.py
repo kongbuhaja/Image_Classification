@@ -31,3 +31,6 @@ class PSDDResNet18(nn.Module):
         x = self.avgpool(x)
         x = self.fc(torch.flatten(x, start_dim=1))
         return x
+    
+    def gradcam(self, x):
+        return self.forward(x)
