@@ -15,6 +15,7 @@ def set_seed(seed):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    torch.autograd.set_detect_anomaly(True)
 
 def set_cpus(cpus):
     cores = [int(core) for core in cpus.split('-')]

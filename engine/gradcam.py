@@ -11,9 +11,9 @@ def process(model, eval_loader, length=4, device='cuda:0'):
     length = min(len(eval_loader), length)
     limited_loader = islice(eval_loader, length)
 
-    val_tqdm = tqdm.tqdm(limited_loader, total=length, ncols=121, desc=f'Eval model', ascii=' =', colour='green')
+    val_tqdm = tqdm.tqdm(limited_loader, total=length, ncols=180, desc=f'GradCAM model', ascii=' =', colour='green')
     for iter, (x_data, y_data) in enumerate(val_tqdm):
-        pred = gradcam.model(x_data.to(device))
+        pred = gradcam.model.gradcam(x_data.to(device))
         ci = pred.argmax(dim=1)
 
         heatmaps = []

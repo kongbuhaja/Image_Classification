@@ -13,7 +13,7 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
 
     model.model.train()
     for e in range(args.epochs):
-        train_tqdm = tqdm.tqdm(train_loader, total=len(train_loader), ncols=121, desc=f'Train epochs {e+1}/{args.epochs}', ascii=' =', colour='red')
+        train_tqdm = tqdm.tqdm(train_loader, total=len(train_loader), ncols=180, desc=f'Train epochs {e+1}/{args.epochs}', ascii=' =', colour='red')
         train_loss = 0.
         lr = optimizer.param_groups[0]['lr']
         for iter, (x_data, y_data) in enumerate(train_tqdm):
@@ -26,15 +26,15 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
 
             train_loss += loss.item()
             tl = train_loss/(iter+1)
-            train_tqdm.set_postfix_str(f'| lr: {lr:.5f}, total_loss: {tl:.5f}')
+            train_tqdm.set_postfix_str(f'| lr: {lr:.5f}, train_loss: {tl:.5f}')
     
         if (e)%args.eval_term == 0:
-            rpfl = eval_process(model, eval_loader, loss_fn, device=device)
-            model.add_log(e, tl, lr, *rpfl)
+            trpfl = eval_process(model, eval_loader, loss_fn, device=device)
+            model.add_log(e, tl, lr, *trpfl[1:])
             model.save()
 
         scheduler.step()
 
-        if e - model.best_epoch > args.patience:
+        if e - model.best['epoch'] > args.patience:
             break
             
