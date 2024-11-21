@@ -8,9 +8,8 @@ class DConv(nn.Module):
         assert k==3
         c = int(c1 * e)//16*16
         # self.cv1 = nn.Linear(c1, c)
-        dg = c//16
         self.cv1 = nn.Conv2d(c1, c, 1, 1, groups=1)
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), group=dg, dw_kernel_size=1, without_pointwise=False, output_bias=False)
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=1, without_pointwise=False, output_bias=False)
         # self.cv2 = nn.Linear(c, c2, bias=False)
         self.cv2 = nn.Conv2d(c, c2, 1, 1, groups=1, bias=False)
         self.bn = nn.BatchNorm2d(c2)
