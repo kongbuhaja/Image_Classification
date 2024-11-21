@@ -88,7 +88,7 @@ class DCNv4(nn.Module):
 
         if center_feature_scale:
             self.center_feature_scale_proj_weight = nn.Parameter(
-                torch.zeros((self.group, c2), dtype=torch.float))
+                torch.zeros((self.group, channels), dtype=torch.float))
             self.center_feature_scale_proj_bias = nn.Parameter(
                 torch.tensor(0.0, dtype=torch.float).view((1,)).repeat(self.group, ))
             self.center_feature_scale_module = CenterFeatureScaleModule()
