@@ -124,7 +124,7 @@ class PSABlock(nn.Module):
 class PSDBlock(nn.Module):
     def __init__(self, c, k=3, shortcut=True):
         super().__init__()
-        self.attn = DConv(c, c, k=k)
+        self.attn = DConv(c, c, k=k, e=0.7)
         self.ffn = nn.Sequential(Conv(c, c * 2, 1),
                                  Conv(c * 2, c, 1, act=False))
         self.add = shortcut
