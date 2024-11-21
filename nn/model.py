@@ -10,32 +10,40 @@ import numpy as np
 
 class Model():
     def __init__(self, model_name='', nc=200, path=None):
+        self.info = {'model_name':model_name,
+                     'params':-1}
+        self.best = {'epoch':-1,
+                     'recall':-1,
+                     'precision':-1,
+                     'f1_score':-1,
+                     'train_loss':-1,
+                     'val_loss':-1}
+        
         if path:
-            self.model_name = path.split('/')[-2]
+            self.info['model_name'] = path.split('/')[-1].split('_')[0]
             self.path = path
             self.load()
         else:
-            self.model_name = model_name
+            self.info['model_name'] = model_name
             self.get_savepath()
             self.model = get_model(model_name, nc)
-            print(f'Success to initialize {self.model_name} model')
+            print(f'Success to initialize {model_name} model')
     
         self.nc = nc
-        self.params = self.count_parameters(verbose=0)
+        self.info['params'] = self.count_parameters(verbose=0)
         self.epochs, self.lrs, self.train_losses = [], [], []
         self.recalls, self.precisions, self.f1_scores, self.val_losses = [], [], [], []
-        self.best_epoch, self.best_train_loss = -1, -1
-        self.best_recall, self.best_precision, self.best_f1_score, self.best_val_loss= -1, -1, -1, -1
+        
 
     def get_savepath(self):
         path = 'trained_models'
         if not os.path.exists(path):
             os.mkdir(path)
         count = sum(
-            d.startswith(f'{self.model_name}_') 
+            d.startswith(f"{self.info['model_name']}_") 
             for _, dirs, _ in os.walk(path) for d in dirs
         )
-        path += f'/{self.model_name}_{count+1}'
+        path += f"/{self.info['model_name']}_{count+1}"
         os.mkdir(path)
         self.path = path
 
@@ -45,7 +53,14 @@ class Model():
         self.model = torch.load(f'{self.path}/model.pt')
         with open(f'{self.path}/model.info', 'r') as f:
             text = f.read()
-
+        
+        for paragraph in text.split('\n\n')[:2]:
+            for line in paragraph.split('\n'):
+                if ':' in line:
+                    k, v = line.split(':')
+                    k, v = k.strip(' '), v.strip(' ')
+                    if k in self.best.keys():
+                        self.best[k] = v
         print(f'Success to load model from {self.path}')
 
     def add_log(self, e, tl, lr, r, p, f, vl):
@@ -57,42 +72,43 @@ class Model():
         self.f1_scores += [f]
         self.val_losses += [vl]
 
-    def save(self, rpfl=None):
-        if rpfl is not None:
-            self.save_info(rpfl)
+    def save(self, trpfl=None):
+        if trpfl is not None:
+            self.save_info(trpfl)
         
         else:
-            if self.best_recall < self.recalls[-1]:
-                self.best_recall = self.recalls[-1]
-                self.best_precision = self.precisions[-1]
-                self.best_f1_score = self.f1_scores[-1]
-                self.best_epoch = self.epochs[-1]
-                self.best_train_loss = self.train_losses[-1]
-                self.best_val_loss = self.val_losses[-1]
+            if self.best['recall'] < self.recalls[-1]:
+                self.best['epoch'] = self.epochs[-1]
+                self.best['recall'] = self.recalls[-1]
+                self.best['precision'] = self.precisions[-1]
+                self.best['f1_score'] = self.f1_scores[-1]
+                self.best['train_loss'] = self.train_losses[-1]
+                self.best['val_loss'] = self.val_losses[-1]
 
                 torch.save(self.model, f'{self.path}/model.pt')
                 self.save_info()
                 print(f'Success to save model in {self.path}')
             self.save_csv()
 
-    def save_info(self, rpfl=None, term=16):
+    def save_info(self, trpfl=None, term=16):
         info_path = f'{self.path}/model.info'
         with open(info_path, 'w') as f:
-            text = f"{'model_name':<{term}}:{self.model_name:>{term}}\n" +\
-                   f"{'params':<{term}}:{self.params:>{term}}\n\n" +\
+            text = f"{'model_name':<{term}}:{self.info['model_name']:>{term}}\n" +\
+                   f"{'params':<{term}}:{self.info['params']:>{term}}\n\n" +\
                    f"{'Train'}\n" +\
-                   f"{'epoch':<{term}}:{self.best_epoch+1:>{term}}\n" +\
-                   f"{'recall':<{term}}:{self.best_recall:>{term}.8f}\n" +\
-                   f"{'precision':<{term}}:{self.best_precision:>{term}.8f}\n" +\
-                   f"{'f1_score':<{term}}:{self.best_f1_score:>{term}.8f}\n" +\
-                   f"{'train_loss':<{term}}:{self.best_train_loss:>{term}.8f}\n" +\
-                   f"{'val_loss':<{term}}:{self.best_val_loss:>{term}.8f}\n\n"
-            if rpfl is not None:
+                   f"{'epoch':<{term}}:{int(self.best['epoch'])+1:>{term}}\n" +\
+                   f"{'recall':<{term}}:{float(self.best['recall']):>{term}.8f}\n" +\
+                   f"{'precision':<{term}}:{float(self.best['precision']):>{term}.8f}\n" +\
+                   f"{'f1_score':<{term}}:{float(self.best['f1_score']):>{term}.8f}\n" +\
+                   f"{'train_loss':<{term}}:{float(self.best['train_loss']):>{term}.8f}\n" +\
+                   f"{'val_loss':<{term}}:{float(self.best['val_loss']):>{term}.8f}\n\n"
+            if trpfl is not None:
                 text += f"{'Evaluation'}\n" +\
-                        f"{'val_recall':<{term}}:{rpfl[0]:>{term}.8f}\n" +\
-                        f"{'val_precision':<{term}}:{rpfl[1]:>{term}.8f}\n" +\
-                        f"{'val_f1_score':<{term}}:{rpfl[2]:>{term}.8f}\n" +\
-                        f"{'val_loss':<{term}}:{rpfl[3]:>{term}.8f}"
+                        f"{'process_time':<{term}}:{trpfl[0]:>{term}.8f}\n" +\
+                        f"{'recall':<{term}}:{trpfl[1]:>{term}.8f}\n" +\
+                        f"{'precision':<{term}}:{trpfl[2]:>{term}.8f}\n" +\
+                        f"{'f1_score':<{term}}:{trpfl[3]:>{term}.8f}\n" +\
+                        f"{'loss':<{term}}:{trpfl[4]:>{term}.8f}"
                 print(text)
             f.write(text)
 
