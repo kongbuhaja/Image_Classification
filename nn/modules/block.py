@@ -33,7 +33,7 @@ class ResBlock2(nn.Module):
 class DResBlock(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=1):
         super().__init__()
-        self.conv1 = DConv(c1, c2, k, s, p, e=1.2)
+        self.conv1 = DConv(c1, c2, k, s, p, e=1.19)
         self.conv2 = Conv(c2, c2, k=1, act=False)
         self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
         # self.act = nn.SiLU()
@@ -98,7 +98,7 @@ class PSD(nn.Module):
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
 
-        self.attn = DConv(self.c, self.c, k=3)
+        self.attn = DConv(self.c, self.c, k=3, e=0.7)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
