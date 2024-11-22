@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-import torchvision
 import os
 from .models import *
 from data.common import UnNormalize
@@ -60,7 +59,8 @@ class Model():
                     k, v = line.split(':')
                     k, v = k.strip(' '), v.strip(' ')
                     if k in self.best.keys():
-                        self.best[k] = v
+                        self.best[k] = int(v)-1 if k == 'epoch' else v
+
         print(f'Success to load model from {self.path}')
 
     def add_log(self, e, tl, lr, r, p, f, vl):
