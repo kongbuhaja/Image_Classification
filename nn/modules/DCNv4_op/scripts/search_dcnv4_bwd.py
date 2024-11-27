@@ -24,7 +24,7 @@ torch.set_printoptions(threshold=10000)
 
 
 
-torch.manual_seed(3)
+# torch.manual_seed(3)
 
 def speed_test_backward(func, args, inputs, name='Unknown'):
     # warmup

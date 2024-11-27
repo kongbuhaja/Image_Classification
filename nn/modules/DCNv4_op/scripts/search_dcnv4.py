@@ -19,7 +19,7 @@ from functions.dcnv3_func import DCNv3Function, dcnv3_core_pytorch
 from functions.dcnv4_func import DCNv4Function
 torch.set_printoptions(threshold=10000)
 
-torch.manual_seed(3)
+# torch.manual_seed(3)
 
 
 #@torch.no_grad()

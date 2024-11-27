@@ -3,12 +3,12 @@ from .common import autopad
 from DCNv4 import DCNv4
 
 class DConv(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True, e=1.0):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, dw=3, act=True, e=1.0):
         super().__init__()
         assert k==3
         c = int(c1 * e)//16*16
         self.cv1 = nn.Conv2d(c1, c, 1, 1, groups=1)
-        self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=1, without_pointwise=False, output_bias=False)
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=dw, without_pointwise=False, output_bias=False)
         self.cv2 = nn.Conv2d(c, c2, 1, 1, groups=1, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else None

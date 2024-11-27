@@ -56,7 +56,7 @@ def get_reference_points(spatial_shapes, device):
     return reference_points
 
 
-torch.manual_seed(3)
+# torch.manual_seed(3)
 
 @torch.no_grad()
 def speed_test(func, args, inputs, name='Unknown'):

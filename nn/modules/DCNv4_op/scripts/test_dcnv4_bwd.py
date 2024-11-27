@@ -48,7 +48,7 @@ stride = 1
 H_out = (H_in + 2 * pad - (dilation * (Kh - 1) + 1)) // stride + 1
 W_out = (W_in + 2 * pad - (dilation * (Kw - 1) + 1)) // stride + 1
 
-torch.manual_seed(3)
+# torch.manual_seed(3)
 
 def speed_test_backward(func, args, inputs, name='Unknown'):
     # warmup
