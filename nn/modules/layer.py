@@ -3,22 +3,44 @@ from .common import autopad
 from DCNv4 import DCNv4
 
 class DConv(nn.Module):
-    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, dw=3, act=True, e=1.0):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, dw=None, act=True, e=1.0):
         super().__init__()
         assert k==3
         c = int(c1 * e)//16*16
         self.cv1 = nn.Conv2d(c1, c, 1, 1, groups=1)
         self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=dw, without_pointwise=False, output_bias=False)
-        self.cv2 = nn.Conv2d(c, c2, 1, 1, groups=1, bias=False)
+        self.cv2 = Conv(c, c2, 1, 1)
+        
+    def forward(self, x):
+        return self.cv2(self.conv(self.cv1(x)))
+        
+    def gradcam(self, x):
+        return self.forward(x)
+
+class DConv2(nn.Module):
+    def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, dw=None, act=True, e=1.0):
+        super().__init__()
+        assert k==3
+        c = int(c1 * e)//16*16
+        self.cv1 = Conv(c1, c, 1, 1, act=False)
+        self.conv = DCNv4(c, k, s, autopad(k, p, d), dw_kernel_size=dw, without_pointwise=False, output_bias=False)
+        self.cv2 = Conv(c, c2, 1, 1)
+        
+    def forward(self, x):
+        return self.cv2(self.conv(self.cv1(x)))
+    
+class Linear(nn.Module):
+    def __init__(self, c1, c2, act=True):
+        super().__init__()
+        self.linear = nn.Linear(c1, c2, bias=False)
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.SiLU() if act is True else act if isinstance(act, nn.Module) else None
 
     def forward(self, x):
-        x = self.bn(self.cv2(self.conv(self.cv1(x))))
+        x = self.bn(self.linear(x.permute(0,2,3,1)).permute(0,3,1,2))
         return self.act(x) if self.act else x
-    
-    def gradcam(self, x):
-        return self.forward(x)
+# -> pw conv로 하려면 dcn내부에서 permute 이후 contiguous가 필요    
+
 
 class Conv(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):

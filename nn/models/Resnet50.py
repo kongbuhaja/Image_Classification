@@ -18,6 +18,11 @@ class ResNet50(nn.Module):
                                     *[Bottleneck(c*2**5, c*2**3, c*2**5, 3, 1) for n in range(2)])
         self.avgpool = nn.AdaptiveAvgPool2d(1)
         self.fc = nn.Linear(c*2**5, nc)
+        self._reset_parameters()
+    
+    def _reset_parameters(self):
+        xavier_uniform_(self.fc.weight.data)
+        constant_(self.fc.bias.data, 0.)
 
     def forward(self, x):
         x = self.conv(x)
