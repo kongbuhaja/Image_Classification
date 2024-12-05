@@ -113,7 +113,7 @@ class DCNv4(nn.Module):
         """
         b, c, h, w = input.shape
 
-        x = input.permute(0, 2, 3, 1)
+        x = input.permute(0, 2, 3, 1).contiguous()
         if not self.without_pointwise:
             x = self.value_proj(x)
         # x = x.reshape(b, h, w, -1)

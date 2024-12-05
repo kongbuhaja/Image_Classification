@@ -78,7 +78,6 @@ class PSD(nn.Module):
         self.c = int(c1 * e)
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
-
         self.attn = DConv(self.c, self.c, k=3, dw=3, e=0.6)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
@@ -163,3 +162,40 @@ class C2PSD(nn.Module):
         a, b = self.cv1(x.clone()).split((self.c, self.c), dim=1)
         b = self.m(b)
         return self.cv2(torch.cat((a, b), 1))
+    
+class PSD2(nn.Module):
+    def __init__(self, c1, c2, e=0.5):
+        super().__init__()
+        assert c1 == c2
+        self.c = int(c1 * e)
+        self.cv1 = Conv(c1, 2 * self.c, 1, 1)
+        self.cv2 = Conv(2 * self.c, c1, 1)
+
+        self.attn = DConv(self.c, self.c, k=3, dw=1, e=0.8)
+        self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
+                                 Conv(self.c * 2, self.c, 1, act=False))
+        
+    def forward(self, x):
+        a, b = self.cv1(x).split((self.c, self.c), dim=1)
+        b = b + self.attn(b)
+        b = b + self.ffn(b)
+        return self.cv2(torch.cat((a, b), 1))
+    
+    def gradcam(self, x):
+        return self.forward(x)
+    
+
+class DResBlock2(nn.Module):
+    def __init__(self, c1, c2, k=3, s=1, p=1):
+        super().__init__()
+        self.conv1 = DConv2(c1, c2, k, s, p, dw=3, e=0.85)
+        self.conv2 = Conv(c2, c2, k=1, act=False)
+        self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
+
+    def forward(self, x):
+        branch = self.downsample(x) if self.downsample else x
+        x = self.conv2(self.conv1(x))
+        return x + branch
+
+    def gradcam(self, x):
+        return self.forward(x)

@@ -5,7 +5,8 @@ from .eval import process as eval_process
 from .lr import Scheduler
 
 def process(model, train_loader, eval_loader, args, device='cuda:0'):
-    optimizer = torch.optim.SGD(model.model.parameters(), lr=args.init_lr, momentum=0.9)
+    optimizer = torch.optim.SGD(model.model.parameters(), lr=args.init_lr, momentum=0.937)
+    # optimizer = torch.optim.Adam(model.model.parameters(), lr=args.init_lr, betas=(0.9, 0.937))
     loss_fn = nn.CrossEntropyLoss()
     # scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda e: 0.01 + 0.99*(1-(e+1)/epochs))
     scheduler_fn = Scheduler(ilr=args.init_lr, epochs=args.epochs, wepochs=args.wepochs)
@@ -35,6 +36,6 @@ def process(model, train_loader, eval_loader, args, device='cuda:0'):
 
         scheduler.step()
 
-        if e - model.best['epoch'] > args.patience:
+        if e - model.best['epoch'] + 1 > args.patience:
             break
             
