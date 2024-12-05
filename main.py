@@ -19,7 +19,7 @@ def train_process(args):
 def eval_process(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    test_loader, _ = data.get_dataloader(args.data, 
+    test_loader, _ = data.get_dataloader(args,
                                          split='test')
     
     model = nn.Model(path=args.path)
