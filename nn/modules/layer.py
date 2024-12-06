@@ -43,8 +43,6 @@ class Linear(nn.Module):
         return self.act(x) if self.act else x
 # -> pw conv로 하려면 dcn내부에서 permute 이후 contiguous가 필요    
 
->>>>>>> 6f982d431a6b05b95b956a19c2c6862c7c001f16
-
 class Conv(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=None, g=1, d=1, act=True):
         super().__init__()
