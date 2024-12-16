@@ -9,16 +9,25 @@ def process(model, eval_loader, loss_fn=None, device='cuda:0'):
     model.model.eval()
     metric = Metric(model.nc)
     with torch.no_grad():
+        x_data = torch.randn(1, 3, 640, 640).cuda()
+
+        for _ in range(10):
+            _ = model.model(x_data)
+
+        starter, ender = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
         val_loss = 0.
         times = 0.
         val_tqdm = tqdm.tqdm(eval_loader, total=len(eval_loader), ncols=180, desc=f'Eval model', ascii=' =', colour='blue')
         for iter, (x_data, y_data) in enumerate(val_tqdm):
             x_input = x_data.to(device)
-            st = time.time()
+            # st = time.time()
+            starter.record()
             pred = model.model(x_input)
-            times += (time.time() - st)
+            # times += (time.time() - st)
+            ender.record()
+            torch.cuda.synchronize()
+            times += starter.elapsed_time(ender)
             loss = loss_fn(pred, y_data.to(device))
-
             val_loss += loss.item()
 
             pred_ = torch.argmax(pred, dim=1).to('cpu')

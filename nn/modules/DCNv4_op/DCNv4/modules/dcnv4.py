@@ -112,6 +112,7 @@ class DCNv4(nn.Module):
         :return output                     (N, H, W, C)
         """
         b, c, h, w = input.shape
+        input = input
 
         x = input.permute(0, 2, 3, 1).contiguous()
         if not self.without_pointwise:

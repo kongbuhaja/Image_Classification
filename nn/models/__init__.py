@@ -9,10 +9,6 @@ from .C2PSAResnet18 import C2PSAResNet18
 from .C2PSDResnet18 import C2PSDResNet18
 from .C2PSADResnet18 import C2PSADResNet18
 from .C2PSDDResnet18 import C2PSDDResNet18
-from .PSDDResnet182 import PSDDResNet182
-from .PSDResnet182 import PSDResNet182
-from .DResnet182 import DResNet182
-from .PSADResnet182 import PSADResNet182
 
 __all__ = ['ResNet18', 
            'DResNet18', 
@@ -24,8 +20,4 @@ __all__ = ['ResNet18',
            'C2PSDResNet18',
            'C2PSADResNet18',
            'C2PSDDResNet18',
-           'ResNet50',
-           'PSDResNet182',
-           'PSDDResNet182',
-           'DResNet182',
-           'PSADResNet182']
+           'ResNet50',]
