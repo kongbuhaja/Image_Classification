@@ -21,7 +21,7 @@ class ResBlock(nn.Module):
 class DResBlock(nn.Module):
     def __init__(self, c1, c2, k=3, s=1, p=1):
         super().__init__()
-        self.conv1 = DConv(c1, c2, k, e=1.15) # 8:1.15, 16:1.35, 32:1.5, 65:1.5
+        self.conv1 = DConv(c1, c2, k, e=1.1) # 8:1.15, 16:1.35, 32:1.5, 65:1.5
         self.conv2 = Conv(c2, c2, k=1, act=False)
         self.downsample = Conv(c1, c2, 1, s, act=False) if c1 != c2 else None
 
@@ -72,13 +72,15 @@ class PSA(nn.Module):
         return self.forward(x)
     
 class PSD(nn.Module):
-    def __init__(self, c1, c2, e=0.5):
+    def __init__(self, c1, c2, e=0.5, gc=8):
         super().__init__()
         assert c1 == c2
         self.c = int(c1 * e)
         self.cv1 = Conv(c1, 2 * self.c, 1, 1)
         self.cv2 = Conv(2 * self.c, c1, 1)
-        self.attn = DConv(self.c, self.c, k=3, e=0.8) # 8:0.8, 16:0.8, 32:1.0, 64:1.0
+
+        # self.attn = DConv(self.c, self.c, k=3, e=0.8, gc=gc) # 8:0.9, 16:1.0
+        self.attn = DCN(self.c, gc=gc)
         self.ffn = nn.Sequential(Conv(self.c, self.c * 2, 1),
                                  Conv(self.c * 2, self.c, 1, act=False))
         
@@ -87,9 +89,6 @@ class PSD(nn.Module):
         b = b + self.attn(b)
         b = b + self.ffn(b)
         return self.cv2(torch.cat((a, b), 1))
-    
-    def gradcam(self, x):
-        return self.forward(x)
     
 class PSABlock(nn.Module):
     def __init__(self, c, attn_ratio=0.5, num_heads=4, shortcut=True):
@@ -108,9 +107,10 @@ class PSABlock(nn.Module):
         return self.forward(x)
     
 class PSDBlock(nn.Module):
-    def __init__(self, c, k=3, shortcut=True):
+    def __init__(self, c, k=3, gc=8, shortcut=True):
         super().__init__()
-        self.attn = DConv(c, c, k=k, e=0.8)
+        # self.attn = DConv(c, c, k=k, e=0.8) # 8:0.9, 16:1.0
+        self.attn = DCN(c, gc=gc)
         self.ffn = nn.Sequential(Conv(c, c * 2, 1),
                                  Conv(c * 2, c, 1, act=False))
         self.add = shortcut
@@ -119,9 +119,6 @@ class PSDBlock(nn.Module):
         x = x + self.attn(x) if self.add else self.attn(x)
         x = x + self.ffn(x) if self.add else self.ffn(x)
         return x
-    
-    def gradcam(self, x):
-        return self.forward(x)
     
 class C2PSA(nn.Module):
     def __init__(self, c1, c2, n=1, e=0.5):
