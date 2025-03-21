@@ -1,0 +1,17 @@
+model_name      :       dresnet18
+params          :         1435008
+
+Train
+epoch           :              54
+recall          :      0.46718989
+precision       :      0.47861725
+f1_score        :      0.47283454
+train_loss      :      1.71496241
+val_loss        :      2.35306427
+
+Evaluation
+process_time    :      1.41170931
+recall          :      0.46790000
+precision       :      0.47964107
+f1_score        :      0.47369779
+loss            :      2.34723167

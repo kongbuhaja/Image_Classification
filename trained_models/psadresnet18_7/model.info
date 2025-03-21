@@ -1,0 +1,17 @@
+model_name      :    psadresnet18
+params          :         1684736
+
+Train
+epoch           :              67
+recall          :      0.48264468
+precision       :      0.49148981
+f1_score        :      0.48702709
+train_loss      :      1.45272652
+val_loss        :      2.28713261
+
+Evaluation
+process_time    :      1.87988089
+recall          :      0.48390000
+precision       :      0.49233542
+f1_score        :      0.48808127
+loss            :      2.28220056

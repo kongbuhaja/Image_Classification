@@ -1,0 +1,17 @@
+model_name      :        resnet18
+params          :         1453800
+
+Train
+epoch           :              61
+recall          :      0.45634580
+precision       :      0.46935372
+f1_score        :      0.46275837
+train_loss      :      1.81931275
+val_loss        :      2.35944904
+
+Evaluation
+process_time    :      1.26055499
+recall          :      0.45690000
+precision       :      0.46984797
+f1_score        :      0.46328353
+loss            :      2.35422498

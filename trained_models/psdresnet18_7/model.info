@@ -1,0 +1,17 @@
+model_name      :     psdresnet18
+params          :         1742104
+
+Train
+epoch           :              83
+recall          :      0.48550100
+precision       :      0.50228960
+f1_score        :      0.49375263
+train_loss      :      1.40730903
+val_loss        :      2.31992567
+
+Evaluation
+process_time    :      1.62234385
+recall          :      0.48580000
+precision       :      0.50186371
+f1_score        :      0.49370122
+loss            :      2.31567526
