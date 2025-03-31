@@ -160,3 +160,20 @@ class C2PSD(nn.Module):
         b = self.m(b)
         return self.cv2(torch.cat((a, b), 1))
     
+class Star_org(nn.Module):
+    def __init__(self, ch1, ch2, n=1):
+        super().__init__()
+
+        self.m = nn.Sequential(*(Star_org_layer(ch1) for _ in range(n)))
+
+    def forward(self, x):
+        return self.m(x)
+    
+    
+class Star(nn.Module):
+    def __init__(self, ch1, ch2, n=2):
+        super().__init__()
+        self.m = nn.Sequential(*(Star_layer(ch1) for _ in range(n)))
+
+    def forward(self, x):
+        return self.m(x)

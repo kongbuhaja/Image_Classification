@@ -3,6 +3,7 @@ import torch
 
 def train_process(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = "cpu"
 
     train_loader, eval_loader, test_loader, nc = data.get_dataloader(args,
                                                                      split='all')
@@ -18,6 +19,7 @@ def train_process(args):
 
 def eval_process(args):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = "cpu"
 
     test_loader, _ = data.get_dataloader(args,
                                          split='test')

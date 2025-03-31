@@ -215,6 +215,8 @@ def get_model(model_name, nc, c=32):
                           'c2psdresnet18',
                           'c2psadresnet18',
                           'c2psddresnet18', 
+                          'starresnet18',
+                          'staroresnet18',
                           'resnet50',]
 
     if model_name == 'resnet18':
@@ -237,6 +239,10 @@ def get_model(model_name, nc, c=32):
         model = C2PSADResNet18(nc, c)
     elif model_name == 'c2psddresnet18':
         model = C2PSDDResNet18(nc, c)
+    elif model_name == 'starresnet18':
+        model = StarResnet18(nc, c)
+    elif model_name == 'staroresnet18':
+        model = StarOResnet18(nc, c)
     elif model_name == 'resnet50':
         model = ResNet50(nc, c)
 

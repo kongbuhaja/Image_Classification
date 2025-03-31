@@ -91,3 +91,39 @@ class Attention(nn.Module):
     
     def gradcam(self, x):
         return self.forward(x)
+    
+class Star_org_layer(nn.Module):
+    def __init__(self, ch):
+        super().__init__()
+
+        self.dw1 = Conv(ch, ch, 7, 1, autopad(7), g=ch, act=False)
+        self.pw1 = nn.Conv2d(ch, int(1.5*ch), 1)
+        self.pw2 = nn.Conv2d(ch, int(1.5*ch), 1)
+        self.act = nn.ReLU6()
+        self.pw3 = Conv(int(1.5*ch), ch, 1, act=False)
+        self.dw2 = nn.Conv2d(ch, ch, 7, 1, autopad(7), groups=ch)
+
+    def forward(self, x):
+        branch = x
+
+        x = self.dw1(x)
+        sub_x1 = self.pw1(x)
+        sub_x2 = self.act(self.pw2(x))
+        x = sub_x1 * sub_x2
+        x = self.pw3(x)
+        x = self.dw2(x)
+
+        return x + branch
+        
+class Star_layer(nn.Module):
+    def __init__(self, ch):
+        super().__init__()
+        # self.pw1 = nn.Conv2d(ch, ch, 1, 1, autopad(1))
+        # self.pw2 = nn.Conv2d(ch, ch, 1, 1, autopad(1))
+        self.pw1 = Conv(ch, ch, 1, 1, autopad(1), act=False)
+        self.pw2 = Conv(ch, ch, 1, 1, autopad(1), act=False)
+        self.act = nn.ReLU6()
+
+    def forward(self, x):
+        return self.pw1(x) * self.act(self.pw2(x))
+    
