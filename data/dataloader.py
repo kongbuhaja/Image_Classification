@@ -9,7 +9,7 @@ def get_dataloader(args, split='all', cache=True):
     
     check_dataset(args.data)
 
-    path = 'dataset'
+    path = '../datasets'
     if args.data == 'tiny-imagenet':
         path += '/tiny-imagenet-200'
     

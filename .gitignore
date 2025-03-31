@@ -1,6 +1,6 @@
-# /trained_models/
+/trained_models/
 /logs/
-# /dataset/
+/dataset/
 build/
 __pycache__/
 DCNv4.egg-info/

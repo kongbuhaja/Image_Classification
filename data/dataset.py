@@ -8,7 +8,7 @@ class TinyImageNetDataset(torch.utils.data.Dataset):
     name2idx = {}
     idx2name = {}
     def __init__(self, split='train', x_transform=None, y_transform=None, cache=True):
-        self.root = 'dataset/tiny-imagenet-200'
+        self.root = '../datasets/tiny-imagenet-200'
         self.split = split
         self.x_transform = x_transform
         self.y_transform = y_transform

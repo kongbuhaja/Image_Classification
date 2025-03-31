@@ -4,21 +4,21 @@ import random
 from PIL import Image, ImageEnhance, ImageDraw
 
 def check_dataset(data_name):
-    if not os.path.exists('dataset'):
-        os.mkdir('dataset')
+    if not os.path.exists('../datasets'):
+        os.mkdir('../datasets')
 
     assert data_name in ['tiny-imagenet']
 
     if data_name == 'tiny-imagenet':
-        if not os.path.exists('dataset/tiny-imagenet-200'):
-            os.system('cd dataset \n \
+        if not os.path.exists('../datasets/tiny-imagenet-200'):
+            os.system('cd ../datasets \n \
                     wget http://cs231n.stanford.edu/tiny-imagenet-200.zip \n \
                     unzip tiny-imagenet-200.zip \n \
                     cd ../ \n \
                     clear')
 
         else:
-            print('dataset/tiny-imagenet-200 already exists')
+            print('../datasets/tiny-imagenet-200 already exists')
 
 # y
 class Soft_Label():
